@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Finanze Personali</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>💰 Gestione Finanze Personali</h1>
+            <p class="header__subtitle">Tieni traccia dei tuoi guadagni e delle tue spese</p>
+        </header>
+
+        <!-- Riepiloghi principali -->
+        <section class="summary-cards">
+            <div class="card summary-card summary-card--income">
+                <div class="card__body">
+                    <h3>Guadagni Totali</h3>
+                    <div class="summary-amount" id="totalIncome">€0,00</div>
+                </div>
+            </div>
+            <div class="card summary-card summary-card--expense">
+                <div class="card__body">
+                    <h3>Spese Totali</h3>
+                    <div class="summary-amount" id="totalExpenses">€0,00</div>
+                </div>
+            </div>
+            <div class="card summary-card summary-card--balance">
+                <div class="card__body">
+                    <h3>Saldo</h3>
+                    <div class="summary-amount" id="balance">€0,00</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Form inserimento transazione -->
+        <section class="card form-section">
+            <div class="card__header">
+                <h2>Aggiungi Nuova Transazione</h2>
+            </div>
+            <div class="card__body">
+                <form id="transactionForm" class="transaction-form">
+                    <div class="form-group">
+                        <label class="form-label">Tipo di Transazione</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="type" value="guadagno" checked>
+                                <span class="radio-custom radio-custom--income">📈 Guadagno</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="type" value="spesa">
+                                <span class="radio-custom radio-custom--expense">📉 Spesa</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="categoryGroup" style="display: none;">
+                        <label for="category" class="form-label">Categoria</label>
+                        <select id="category" class="form-control">
+                            <option value="">Seleziona categoria...</option>
+                            <option value="Casa">🏠 Casa</option>
+                            <option value="Trasporti">🚗 Trasporti</option>
+                            <option value="Cibo">🍽️ Cibo</option>
+                            <option value="Divertimento">🎉 Divertimento</option>
+                            <option value="Salute">🏥 Salute</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Altro">📋 Altro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount" class="form-label">Importo (€)</label>
+                        <input type="number" id="amount" class="form-control" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date" class="form-label">Data</label>
+                        <input type="date" id="date" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn--primary btn--full-width">
+                        ➕ Aggiungi Transazione
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Filtri periodo -->
+        <section class="filters">
+            <div class="filter-buttons">
+                <button class="btn btn--outline filter-btn active" data-period="all">Tutto</button>
+                <button class="btn btn--outline filter-btn" data-period="week">Settimana</button>
+                <button class="btn btn--outline filter-btn" data-period="month">Mese</button>
+                <button class="btn btn--outline filter-btn" data-period="30days">30 giorni</button>
+            </div>
+            <button class="btn btn--secondary" id="exportBtn">📤 Esporta CSV</button>
+        </section>
+
+        <!-- Grafici -->
+        <section class="charts-section">
+            <div class="charts-grid">
+                <div class="card chart-card">
+                    <div class="card__header">
+                        <h3>Spese per Categoria</h3>
+                    </div>
+                    <div class="card__body">
+                        <div class="chart-container">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card chart-card">
+                    <div class="card__header">
+                        <h3>Guadagni vs Spese (Mese)</h3>
+                    </div>
+                    <div class="card__body">
+                        <div class="chart-container">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card chart-card chart-card--full">
+                    <div class="card__header">
+                        <h3>Trend Ultimi 30 Giorni</h3>
+                    </div>
+                    <div class="card__body">
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista transazioni recenti -->
+        <section class="card transactions-section">
+            <div class="card__header">
+                <h2>Transazioni Recenti</h2>
+                <div class="transactions-stats">
+                    <span id="statsInfo">Nessuna transazione</span>
+                </div>
+            </div>
+            <div class="card__body">
+                <div id="transactionsList" class="transactions-list">
+                    <div class="empty-state">
+                        <p>Nessuna transazione ancora registrata.</p>
+                        <p>Inizia aggiungendo la tua prima transazione sopra! 👆</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal di conferma eliminazione -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Conferma Eliminazione</h3>
+            <p>Sei sicuro di voler eliminare questa transazione?</p>
+            <div class="modal-actions">
+                <button class="btn btn--secondary" id="cancelDelete">Annulla</button>
+                <button class="btn btn--primary" id="confirmDelete">Elimina</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
